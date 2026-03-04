@@ -1,4 +1,403 @@
- <!-- DEMO SECTION -->
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShadowSIM | SS7 God Mode - Direct Tower Exploitation</title>
+    <meta name="description" content="Stop phishing and start owning. Direct SS7 exploitation for total OTP bypass and SMS interception at the carrier level.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            950: '#050505',
+                            900: '#0a0a0a',
+                            800: '#111111',
+                            700: '#1a1a1a'
+                        },
+                        neon: {
+                            cyan: '#00f2ff',
+                            blue: '#0066ff',
+                            purple: '#bc13fe'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #050505; color: #e5e5e5; }
+        
+        .glow-text {
+            text-shadow: 0 0 15px rgba(0, 242, 255, 0.6);
+        }
+
+        .cyber-card {
+            background: rgba(17, 17, 17, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cyber-card:hover {
+            border-color: #00f2ff;
+            background: rgba(20, 20, 20, 0.95);
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .neon-btn {
+            background: linear-gradient(135deg, #0066ff 0%, #00f2ff 100%);
+            box-shadow: 0 0 20px rgba(0, 102, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .neon-btn:hover {
+            box-shadow: 0 0 35px rgba(0, 242, 255, 0.7);
+            transform: scale(1.02);
+        }
+
+        /* SPA Logic for Sections */
+        .view-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        .view-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .nav-link.active {
+            color: #00f2ff !important;
+            border-bottom: 2px solid #00f2ff;
+        }
+
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 1;
+            background: linear-gradient(0deg, rgba(0, 242, 255, 0.03) 0%, transparent 100%);
+            position: absolute;
+            bottom: 100%;
+            animation: scan 5s linear infinite;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .scanline {
+                display: none; /* remove on mobile for readability */
+            }
+        }
+
+        @keyframes scan {
+            0% { bottom: 100%; }
+            100% { bottom: -100px; }
+        }
+
+        .terminal-glow {
+            box-shadow: inset 0 0 20px rgba(0, 242, 255, 0.05);
+        }
+
+        /* YouTube Embed Styling */
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 177.77%; /* Height for YouTube Shorts / 9:16 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #000;
+        }
+        
+        /* Landscape video fix */
+        .video-wrapper.landscape {
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* fallback for broken images */
+        img {
+            background: #0f1a1a;
+            min-height: 100px;
+            color: #00f2ff60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-neon-cyan selection:text-black">
+
+    <header class="fixed w-full top-0 z-[100] bg-dark-950/90 backdrop-blur-2xl border-b border-white/5">
+        <div class="container mx-auto px-6 h-20 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+                <div class="w-10 h-10 bg-neon-blue rounded flex items-center justify-center shadow-[0_0_20px_rgba(0,102,255,0.6)]">
+                    <i class="fas fa-tower-broadcast text-white text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-2xl font-black tracking-tighter italic uppercase text-white">ShadowSIM</span>
+                    <div class="text-[9px] font-mono text-neon-cyan tracking-[.4em] uppercase leading-none font-bold">Signaling God Mode</div>
+                </div>
+            </div>
+            
+            <nav class="hidden md:flex items-center space-x-10">
+                <button onclick="switchTab('home')" id="nav-home" class="nav-link active text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all pb-1">The Software</button>
+                <button onclick="switchTab('demos')" id="nav-demos" class="nav-link text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all pb-1">Visual Proof</button>
+                <a href="https://t.me/shadowsimstore" target="_blank" class="neon-btn px-6 py-2.5 text-black font-black text-xs uppercase tracking-widest rounded transition-all">
+                    Contact Developer
+                </a>
+            </nav>
+
+            <button id="mobile-menu-btn" class="md:hidden text-white focus:outline-none">
+                <i class="fas fa-bars-staggered text-2xl" id="menu-icon"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Nav -->
+        <div id="mobile-menu" class="hidden md:hidden bg-dark-900 border-b border-white/10 w-full px-6 py-8 space-y-6 shadow-2xl">
+            <button onclick="switchTab('home'); toggleMenu()" class="block text-sm font-black uppercase text-white w-full text-left">Main Dashboard</button>
+            <button onclick="switchTab('demos'); toggleMenu()" class="block text-sm font-black uppercase text-white w-full text-left">Verification Proof</button>
+            <a href="https://t.me/shadowsimstore" target="_blank" class="flex items-center justify-center gap-3 w-full bg-neon-blue text-white py-4 rounded font-black uppercase text-xs tracking-widest">
+                <i class="fab fa-telegram text-lg"></i>
+                Message Admin
+            </a>
+        </div>
+    </header>
+
+    <main class="pt-20 min-h-screen">
+        
+        <!-- HOME SECTION -->
+        <div id="view-home" class="view-section active">
+            
+            <section class="relative py-24 px-6 overflow-hidden">
+                <div class="scanline"></div>
+                <div class="container mx-auto text-center relative z-10">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded bg-dark-800 border border-white/10 text-neon-cyan text-[10px] font-bold tracking-[.4em] uppercase">
+                        <span class="w-1.5 h-1.5 rounded-full bg-neon-cyan animate-pulse"></span>
+                        SS7 Node: Injection Ready
+                    </div>
+                    
+                    <h1 class="text-6xl md:text-[110px] font-black leading-[0.8] text-white italic uppercase tracking-tighter mb-10">
+                        PHISHING IS <span class="text-transparent" style="-webkit-text-stroke: 1.5px #ffffff;">FOR AMATEURS.</span><br/>
+                        EXPLOIT THE <span class="text-neon-cyan glow-text">SIGNAL.</span>
+                    </h1>
+                    
+                    <p class="text-lg md:text-2xl text-slate-400 font-medium max-w-3xl mx-auto mb-14 leading-tight">
+                        ShadowSIM hits the **Carrier Infrastructure** directly. No fake links, no physical device access, no bullshit. We exploit SS7 vulnerabilities to pull any OTP or SMS copy straight from the air.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-6">
+                        <button onclick="switchTab('demos')" class="w-full sm:w-auto px-12 py-5 bg-white text-black font-black uppercase italic tracking-widest hover:bg-neon-cyan transition-all rounded">
+                            Watch the Interceptions
+                        </button>
+                        <a href="https://t.me/shadowsimstore" target="_blank" class="w-full sm:w-auto px-12 py-5 bg-dark-800 border border-white/10 text-white font-black uppercase italic tracking-widest hover:border-neon-cyan transition-all rounded">
+                            Contact Admin @shadowsimstore
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RAW CAPABILITIES -->
+            <section class="py-24 bg-dark-900 border-y border-white/5 relative overflow-hidden">
+                <div class="container mx-auto px-6 relative z-10">
+                    <div class="grid lg:grid-cols-2 gap-16 items-center">
+                        <div>
+                            <h2 class="text-4xl font-black italic uppercase text-white mb-6">Signaling Sovereignty</h2>
+                            <p class="text-slate-400 text-lg mb-8 leading-relaxed">
+                                Most tools rely on the user being stupid. **ShadowSIM** relies on the network being broken. By commanding the SS7 stack, our software fools the carrier tower into thinking our node is the target phone.
+                            </p>
+                            
+                            <div class="space-y-6">
+                                <div class="p-6 bg-dark-800 border-l-4 border-neon-cyan terminal-glow">
+                                    <h4 class="text-white font-black uppercase italic mb-2">Direct HLR/VLR Injection</h4>
+                                    <p class="text-sm text-slate-500 font-mono">MAP_UPDATE_LOCATION: We update the target's location to our secure portal, forcing all incoming traffic to reroute to you. Undetectable.</p>
+                                </div>
+                                <div class="p-6 bg-dark-800 border-l-4 border-neon-blue">
+                                    <h4 class="text-white font-black uppercase italic mb-2">Universal OTP Bypass</h4>
+                                    <p class="text-sm text-slate-500 font-mono">Bypass 2FA for Chase, Wells Fargo, Binance, WhatsApp, and Telegram. If it sends an SMS, it's yours instantly.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <div class="bg-black border border-white/10 p-8 rounded-xl shadow-2xl font-mono text-xs">
+                                <div class="flex gap-2 mb-6 text-slate-700">
+                                    <div class="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
+                                </div>
+                                <p class="text-neon-cyan mb-2">root@shadowsim:~# ./start_interception --msisdn +44XXXXXXXX</p>
+                                <p class="text-white">Connecting to Global Title (GT) Hub...</p>
+                                <p class="text-green-500">AUTHENTICATED: T-MOBILE CORE GATEWAY [US]</p>
+                                <p class="text-white">Executing SRI4SM (Send Routing Info for SM)...</p>
+                                <p class="text-neon-cyan font-bold mt-6 uppercase tracking-widest underline">>> Intercepted Payload Received:</p>
+                                <div class="bg-white/5 p-4 text-white mt-2 border border-white/10 italic rounded">
+                                    "Your CashApp login code is 881-224. Do not share this with anyone."
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PRICING TIERS -->
+            <section class="py-24 px-6 bg-dark-950">
+                <div class="container mx-auto">
+                    <div class="text-center mb-16">
+                        <h2 class="text-3xl font-black italic uppercase text-white">Access Tiers</h2>
+                        <div class="w-20 h-1 bg-neon-cyan mx-auto mt-4"></div>
+                        <p class="text-slate-500 text-sm mt-4">Prices in USD, crypto (BTC/XMR/USDT) accepted. Final cost depends on target carrier network.</p>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                        <!-- Starter -->
+                        <div class="cyber-card p-8 rounded-2xl relative overflow-hidden">
+                            <div class="absolute -top-4 -right-4 text-neon-cyan opacity-10">
+                                <i class="fas fa-signal text-8xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-black italic uppercase text-white mb-2">STARTER</h3>
+                            <p class="text-neon-cyan text-3xl font-bold mb-4">$120<span class="text-sm text-slate-500">+</span></p>
+                            <p class="text-slate-400 text-sm mb-6">varies by country</p>
+                            <ul class="text-sm text-slate-500 space-y-2 mb-8">
+                                <li><i class="fas fa-check text-neon-cyan mr-2"></i> 7‑day access</li>
+                                <li><i class="fas fa-check text-neon-cyan mr-2"></i> SMS intercept only</li>
+                                <li><i class="fas fa-times text-slate-600 mr-2"></i> No location</li>
+                            </ul>
+                            <a href="https://t.me/shadowsimstore" target="_blank" class="inline-block w-full text-center py-3 border border-neon-cyan text-neon-cyan font-bold uppercase tracking-widest text-sm rounded hover:bg-neon-cyan/10 transition">Get exact quote</a>
+                        </div>
+                        <!-- Pro -->
+                        <div class="cyber-card p-8 rounded-2xl relative overflow-hidden border-t-4 border-neon-blue scale-105 shadow-2xl">
+                            <span class="absolute -top-3 right-4 bg-neon-blue text-black text-xs px-3 py-1 rounded-full font-bold">🔥 MOST POPULAR</span>
+                            <div class="absolute -top-4 -right-4 text-neon-blue opacity-10">
+                                <i class="fas fa-bolt text-8xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-black italic uppercase text-white mb-2">PRO</h3>
+                            <p class="text-slate-400 text-sm mb-6">contact for pricing</p>
+                            <ul class="text-sm text-slate-500 space-y-2 mb-8">
+                                <li><i class="fas fa-check text-neon-blue mr-2"></i> Monthly renewal</li>
+                                <li><i class="fas fa-check text-neon-blue mr-2"></i> SMS + location + call forward</li>
+                                <li><i class="fas fa-check text-neon-blue mr-2"></i> Priority routes</li>
+                            </ul>
+                            <a href="https://t.me/shadowsimstore" target="_blank" class="inline-block w-full text-center py-3 border border-neon-blue text-neon-blue font-bold uppercase tracking-widest text-sm rounded hover:bg-neon-blue/10 transition">Contact sales</a>
+                        </div>
+                        <!-- Reseller -->
+                        <div class="cyber-card p-8 rounded-2xl relative overflow-hidden">
+                            <div class="absolute -top-4 -right-4 text-neon-purple opacity-10">
+                                <i class="fas fa-cubes text-8xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-black italic uppercase text-white mb-2">RESELLER</h3>
+                            <p class="text-slate-400 text-sm mb-6">contact for pricing</p>
+                            <ul class="text-sm text-slate-500 space-y-2 mb-8">
+                                <li><i class="fas fa-check text-neon-purple mr-2"></i> Unlimited targets</li>
+                                <li><i class="fas fa-check text-neon-purple mr-2"></i> API wholesale</li>
+                                <li><i class="fas fa-check text-neon-purple mr-2"></i> Domestic carrier routing</li>
+                                <li><i class="fas fa-check text-neon-purple mr-2"></i> 24/7 priority support</li>
+                            </ul>
+                            <a href="https://t.me/shadowsimstore" target="_blank" class="inline-block w-full text-center py-3 border border-neon-purple text-neon-purple font-bold uppercase tracking-widest text-sm rounded hover:bg-neon-purple/10 transition">Inquire</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+           <!-- EMAIL + COUNTRY CAPTURE (now with automatic email) -->
+<section class="py-16 px-6 bg-dark-900 border-y border-white/5">
+    <div class="container mx-auto max-w-2xl">
+        <div class="cyber-card p-8 md:p-12 rounded-3xl">
+            <h3 class="text-3xl font-black italic uppercase text-neon-cyan mb-2 text-center">📡 Get Country‑Specific Pricing</h3>
+            <p class="text-center text-slate-400 mb-8">Tell us where you operate – we'll reply within 24h with exact rates for your target carriers.</p>
+            <form action="https://formspree.io/f/mojngyqe" method="POST">
+                <!-- Hidden fields for better email formatting -->
+                <input type="hidden" name="_subject" value="New ShadowSIM Pricing Request">
+                <input type="hidden" name="_message" value="A visitor has requested pricing details.">
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="text-xs text-slate-500 font-mono block mb-1">Email</label>
+                        <input type="email" name="email" placeholder="you@example.com" required class="w-full bg-dark-800 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-neon-cyan focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500 font-mono block mb-1">Target Country</label>
+                        <select name="country" required class="w-full bg-dark-800 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-neon-cyan focus:outline-none">
+                            <option value="" disabled selected>– select –</option>
+                            <option value="US">United States</option>
+                            <option value="UK">United Kingdom</option>
+                            <option value="DE">Germany</option>
+                            <option value="FR">France</option>
+                            <option value="JP">Japan</option>
+                            <option value="BR">Brazil</option>
+                            <option value="Other">Other (specify in message)</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="w-full neon-btn text-black font-black uppercase py-4 rounded-lg tracking-widest text-sm">
+                    <i class="fas fa-paper-plane mr-2"></i>Request Pricing
+                </button>
+            </form>
+            <p class="text-xs text-slate-600 mt-4 text-center">No spam. We only use this to send you carrier‑specific rates.</p>
+        </div>
+    </div>
+</section>
+
+            <!-- FAQ SECTION -->
+            <section class="py-24 bg-dark-950">
+                <div class="container mx-auto px-6">
+                    <div class="text-center mb-16">
+                        <h2 class="text-3xl font-black italic uppercase text-white">Frequently Asked</h2>
+                        <div class="w-20 h-1 bg-neon-cyan mx-auto mt-4"></div>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                        <div class="cyber-card p-6 rounded-xl">
+                            <h3 class="text-neon-cyan font-bold mb-2 flex items-center"><i class="fas fa-question-circle mr-2"></i> Which countries are supported?</h3>
+                            <p class="text-sm text-slate-400">40+ including US, UK, Germany, Japan, Brazil. Full list on request.</p>
+                        </div>
+                        <div class="cyber-card p-6 rounded-xl">
+                            <h3 class="text-neon-cyan font-bold mb-2 flex items-center"><i class="fas fa-question-circle mr-2"></i> Do I need technical skills?</h3>
+                            <p class="text-sm text-slate-400">Basic command line helps, but our guide gets you operational in 10 minutes.</p>
+                        </div>
+                        <div class="cyber-card p-6 rounded-xl">
+                            <h3 class="text-neon-cyan font-bold mb-2 flex items-center"><i class="fas fa-question-circle mr-2"></i> What if an SMS fails?</h3>
+                            <p class="text-sm text-slate-400">95%+ success rate on supported carriers; failed attempts are refunded/credited.</p>
+                        </div>
+                        <div class="cyber-card p-6 rounded-xl">
+                            <h3 class="text-neon-cyan font-bold mb-2 flex items-center"><i class="fas fa-question-circle mr-2"></i> Is my identity hidden?</h3>
+                            <p class="text-sm text-slate-400">Telegram only, no KYC, no logs. Use burner accounts for extra opsec.</p>
+                        </div>
+                        <div class="cyber-card p-6 rounded-xl">
+                            <h3 class="text-neon-cyan font-bold mb-2 flex items-center"><i class="fas fa-question-circle mr-2"></i> Can I test before buying?</h3>
+                            <p class="text-sm text-slate-400">Serious buyers can request a live demo on a test number.</p>
+                        </div>
+                        <div class="cyber-card p-6 rounded-xl">
+                            <h3 class="text-neon-cyan font-bold mb-2 flex items-center"><i class="fas fa-question-circle mr-2"></i> What payment methods?</h3>
+                            <p class="text-sm text-slate-400">BTC, XMR, USDT. No chargebacks, no refunds after access granted.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- DEMO SECTION -->
         <div id="view-demos" class="view-section">
             <section class="py-20 px-6">
                 <div class="container mx-auto">
@@ -51,3 +450,81 @@
                     </div>
                 </div>
             </section>
+    </main>
+
+    <footer class="py-24 border-t border-white/5 bg-black text-center relative z-10">
+        <div class="container mx-auto px-6">
+            <div class="text-4xl font-black italic uppercase mb-8 text-white tracking-tighter">ShadowSIM</div>
+            <p class="text-slate-600 text-[10px] font-mono uppercase tracking-[0.6em] mb-12">Carrier-Level Domination // Code is Law</p>
+            <div class="flex justify-center gap-12 mb-20">
+                <a href="https://t.me/shadowsimstore" target="_blank" class="text-slate-500 hover:text-neon-cyan transition-colors transform hover:scale-125 duration-300"><i class="fab fa-telegram text-5xl"></i></a>
+            </div>
+            <div class="text-[9px] font-bold text-slate-800 uppercase tracking-widest max-w-2xl mx-auto leading-relaxed italic border-t border-white/5 pt-12">
+                No refunds. No support for snitches. This software is sold for educational research on network security. Use at your own risk. © 2026 ShadowSIM Research & Exploitation.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        /**
+         * Robust Single Page Application (SPA) Logic
+         */
+        function switchTab(tabId) {
+            const targetSectionId = tabId === 'home' ? 'view-home' : 'view-demos';
+            
+            document.querySelectorAll('.view-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            const targetSection = document.getElementById(targetSectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            const activeNavBtn = document.getElementById('nav-' + tabId);
+            if (activeNavBtn) {
+                activeNavBtn.classList.add('active');
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /**
+         * Mobile Navigation Controller
+         */
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
+
+        function toggleMenu() {
+            const isMenuHidden = mobileMenu.classList.contains('hidden');
+            if (isMenuHidden) {
+                mobileMenu.classList.remove('hidden');
+                menuIcon.classList.replace('fa-bars-staggered', 'fa-times');
+            } else {
+                mobileMenu.classList.add('hidden');
+                menuIcon.classList.replace('fa-times', 'fa-bars-staggered');
+            }
+        }
+
+        if (menuBtn) {
+            menuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleMenu();
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!mobileMenu.classList.contains('hidden') && !mobileMenu.contains(e.target) && e.target !== menuBtn) {
+                toggleMenu();
+            }
+        });
+
+        console.log('%c SHADOWSIM CORE OPERATIONAL ', 'background: #00f2ff; color: #000; font-weight: bold; padding: 10px; border-radius: 5px;');
+    </script>
+</body>
+</html>
