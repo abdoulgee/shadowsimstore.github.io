@@ -1,300 +1,21 @@
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShadowSIM | SS7 God Mode - Direct Tower Exploitation</title>
-    <meta name="description" content="Stop phishing and start owning. Direct SS7 exploitation for total OTP bypass and SMS interception at the carrier level.">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Space Grotesk', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        dark: {
-                            950: '#050505',
-                            900: '#0a0a0a',
-                            800: '#111111',
-                            700: '#1a1a1a'
-                        },
-                        neon: {
-                            cyan: '#00f2ff',
-                            blue: '#0066ff',
-                            purple: '#bc13fe'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        body { background-color: #050505; color: #e5e5e5; }
-        
-        .glow-text {
-            text-shadow: 0 0 15px rgba(0, 242, 255, 0.6);
-        }
-
-        .cyber-card {
-            background: rgba(17, 17, 17, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .cyber-card:hover {
-            border-color: #00f2ff;
-            background: rgba(20, 20, 20, 0.95);
-            box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
-            transform: translateY(-5px);
-        }
-
-        .neon-btn {
-            background: linear-gradient(135deg, #0066ff 0%, #00f2ff 100%);
-            box-shadow: 0 0 20px rgba(0, 102, 255, 0.4);
-            transition: all 0.3s ease;
-        }
-
-        .neon-btn:hover {
-            box-shadow: 0 0 35px rgba(0, 242, 255, 0.7);
-            transform: scale(1.02);
-        }
-
-        /* SPA Logic for Sections */
-        .view-section {
-            display: none;
-            opacity: 0;
-            transform: translateY(15px);
-        }
-
-        .view-section.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-        }
-
-        .nav-link.active {
-            color: #00f2ff !important;
-            border-bottom: 2px solid #00f2ff;
-        }
-
-        .scanline {
-            width: 100%;
-            height: 100px;
-            z-index: 1;
-            background: linear-gradient(0deg, rgba(0, 242, 255, 0.03) 0%, transparent 100%);
-            position: absolute;
-            bottom: 100%;
-            animation: scan 5s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes scan {
-            0% { bottom: 100%; }
-            100% { bottom: -100px; }
-        }
-
-        .terminal-glow {
-            box-shadow: inset 0 0 20px rgba(0, 242, 255, 0.05);
-        }
-
-        /* YouTube Embed Styling */
-        .video-wrapper {
-            position: relative;
-            padding-bottom: 177.77%; /* Height for YouTube Shorts / 9:16 aspect ratio */
-            height: 0;
-            overflow: hidden;
-            border-radius: 12px;
-            background: #000;
-        }
-        
-        /* Landscape video fix */
-        .video-wrapper.landscape {
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
-        }
-
-        .video-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
-</head>
-<body class="font-sans antialiased selection:bg-neon-cyan selection:text-black">
-
-    <header class="fixed w-full top-0 z-[100] bg-dark-950/90 backdrop-blur-2xl border-b border-white/5">
-        <div class="container mx-auto px-6 h-20 flex justify-between items-center">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
-                <div class="w-10 h-10 bg-neon-blue rounded flex items-center justify-center shadow-[0_0_20px_rgba(0,102,255,0.6)]">
-                    <i class="fas fa-tower-broadcast text-white text-xl"></i>
-                </div>
-                <div>
-                    <span class="text-2xl font-black tracking-tighter italic uppercase text-white">ShadowSIM</span>
-                    <div class="text-[9px] font-mono text-neon-cyan tracking-[.4em] uppercase leading-none font-bold">Signaling God Mode</div>
-                </div>
-            </div>
-            
-            <nav class="hidden md:flex items-center space-x-10">
-                <button onclick="switchTab('home')" id="nav-home" class="nav-link active text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all pb-1">The Software</button>
-                <button onclick="switchTab('demos')" id="nav-demos" class="nav-link text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all pb-1">Visual Proof</button>
-                <a href="https://t.me/shadowsimstore" target="_blank" class="neon-btn px-6 py-2.5 text-black font-black text-xs uppercase tracking-widest rounded transition-all">
-                    Contact Developer
-                </a>
-            </nav>
-
-            <button id="mobile-menu-btn" class="md:hidden text-white focus:outline-none">
-                <i class="fas fa-bars-staggered text-2xl" id="menu-icon"></i>
-            </button>
-        </div>
-
-        <!-- Mobile Nav -->
-        <div id="mobile-menu" class="hidden md:hidden bg-dark-900 border-b border-white/10 w-full px-6 py-8 space-y-6 shadow-2xl">
-            <button onclick="switchTab('home'); toggleMenu()" class="block text-sm font-black uppercase text-white w-full text-left">Main Dashboard</button>
-            <button onclick="switchTab('demos'); toggleMenu()" class="block text-sm font-black uppercase text-white w-full text-left">Verification Proof</button>
-            <a href="https://t.me/shadowsimstore" target="_blank" class="flex items-center justify-center gap-3 w-full bg-neon-blue text-white py-4 rounded font-black uppercase text-xs tracking-widest">
-                <i class="fab fa-telegram text-lg"></i>
-                Message Admin
-            </a>
-        </div>
-    </header>
-
-    <main class="pt-20 min-h-screen">
-        
-        <!-- HOME SECTION -->
-        <div id="view-home" class="view-section active">
-            
-            <section class="relative py-24 px-6 overflow-hidden">
-                <div class="scanline"></div>
-                <div class="container mx-auto text-center relative z-10">
-                    <div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded bg-dark-800 border border-white/10 text-neon-cyan text-[10px] font-bold tracking-[.4em] uppercase">
-                        <span class="w-1.5 h-1.5 rounded-full bg-neon-cyan animate-pulse"></span>
-                        SS7 Node: Injection Ready
-                    </div>
-                    
-                    <h1 class="text-6xl md:text-[110px] font-black leading-[0.8] text-white italic uppercase tracking-tighter mb-10">
-                        PHISHING IS <span class="text-transparent" style="-webkit-text-stroke: 1.5px #ffffff;">FOR AMATEURS.</span><br/>
-                        EXPLOIT THE <span class="text-neon-cyan glow-text">SIGNAL.</span>
-                    </h1>
-                    
-                    <p class="text-lg md:text-2xl text-slate-400 font-medium max-w-3xl mx-auto mb-14 leading-tight">
-                        ShadowSIM hits the **Carrier Infrastructure** directly. No fake links, no physical device access, no bullshit. We exploit SS7 vulnerabilities to pull any OTP or SMS copy straight from the air.
-                    </p>
-                    
-                    <div class="flex flex-col sm:flex-row justify-center items-center gap-6">
-                        <button onclick="switchTab('demos')" class="w-full sm:w-auto px-12 py-5 bg-white text-black font-black uppercase italic tracking-widest hover:bg-neon-cyan transition-all rounded">
-                            Watch the Interceptions
-                        </button>
-                        <a href="https://t.me/shadowsimstore" target="_blank" class="w-full sm:w-auto px-12 py-5 bg-dark-800 border border-white/10 text-white font-black uppercase italic tracking-widest hover:border-neon-cyan transition-all rounded">
-                            Contact Admin @shadowsimstore
-                        </a>
-                    </div>
-                </div>
-            </section>
-
-            <!-- RAW CAPABILITIES -->
-            <section class="py-24 bg-dark-900 border-y border-white/5 relative overflow-hidden">
-                <div class="container mx-auto px-6 relative z-10">
-                    <div class="grid lg:grid-cols-2 gap-16 items-center">
-                        <div>
-                            <h2 class="text-4xl font-black italic uppercase text-white mb-6">Signaling Sovereignty</h2>
-                            <p class="text-slate-400 text-lg mb-8 leading-relaxed">
-                                Most tools rely on the user being stupid. **ShadowSIM** relies on the network being broken. By commanding the SS7 stack, our software fools the carrier tower into thinking our node is the target phone.
-                            </p>
-                            
-                            <div class="space-y-6">
-                                <div class="p-6 bg-dark-800 border-l-4 border-neon-cyan terminal-glow">
-                                    <h4 class="text-white font-black uppercase italic mb-2">Direct HLR/VLR Injection</h4>
-                                    <p class="text-sm text-slate-500 font-mono">MAP_UPDATE_LOCATION: We update the target's location to our secure portal, forcing all incoming traffic to reroute to you. Undetectable.</p>
-                                </div>
-                                <div class="p-6 bg-dark-800 border-l-4 border-neon-blue">
-                                    <h4 class="text-white font-black uppercase italic mb-2">Universal OTP Bypass</h4>
-                                    <p class="text-sm text-slate-500 font-mono">Bypass 2FA for Chase, Wells Fargo, Binance, WhatsApp, and Telegram. If it sends an SMS, it's yours instantly.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="relative">
-                            <div class="bg-black border border-white/10 p-8 rounded-xl shadow-2xl font-mono text-xs">
-                                <div class="flex gap-2 mb-6 text-slate-700">
-                                    <div class="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
-                                    <div class="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
-                                    <div class="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
-                                </div>
-                                <p class="text-neon-cyan mb-2">root@shadowsim:~# ./start_interception --msisdn +44XXXXXXXX</p>
-                                <p class="text-white">Connecting to Global Title (GT) Hub...</p>
-                                <p class="text-green-500">AUTHENTICATED: T-MOBILE CORE GATEWAY [US]</p>
-                                <p class="text-white">Executing SRI4SM (Send Routing Info for SM)...</p>
-                                <p class="text-neon-cyan font-bold mt-6 uppercase tracking-widest underline">>> Intercepted Payload Received:</p>
-                                <div class="bg-white/5 p-4 text-white mt-2 border border-white/10 italic rounded">
-                                    "Your CashApp login code is 881-224. Do not share this with anyone."
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PRODUCT SUITE -->
-            <section class="py-24 px-6 bg-dark-950">
-                <div class="container mx-auto">
-                    <div class="text-center mb-16">
-                        <h2 class="text-3xl font-black italic uppercase text-white">Select Your Weapon</h2>
-                        <div class="w-20 h-1 bg-neon-cyan mx-auto mt-4"></div>
-                    </div>
-                    <div class="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
-                        <!-- ShadowSIM -->
-                        <div class="cyber-card p-10 rounded-2xl relative overflow-hidden">
-                            <div class="absolute -top-4 -right-4 text-neon-cyan opacity-10">
-                                <i class="fas fa-signal text-8xl"></i>
-                            </div>
-                            <h3 class="text-3xl font-black italic uppercase text-white mb-4">ShadowSIM SS7</h3>
-                            <p class="text-slate-500 mb-8 leading-tight">The ultimate interceptor. Direct tower access for global SMS and voice capture. No hardware, just pure protocol power. This is the main hype.</p>
-                            <a href="https://t.me/shadowsimstore" target="_blank" class="inline-block text-neon-cyan font-black uppercase italic tracking-widest text-sm hover:underline">Message Dev to Buy -></a>
-                        </div>
-                        
-                        <!-- TISS -->
-                        <div class="cyber-card p-10 rounded-2xl relative overflow-hidden">
-                            <div class="absolute -top-4 -right-4 text-neon-purple opacity-10">
-                                <i class="fas fa-credit-card text-8xl"></i>
-                            </div>
-                            <h3 class="text-3xl font-black italic uppercase text-white mb-4">Tiss Card API</h3>
-                            <p class="text-slate-500 mb-8 leading-tight">Professional gateway suite for financial bypass. Skip 3D Secure, automate verification gates, and cash out directly to your wallet. Speed and scale.</p>
-                            <a href="https://t.me/shadowsimstore" target="_blank" class="inline-block text-neon-purple font-black uppercase italic tracking-widest text-sm hover:underline">Inquire About Tiss -></a>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <!-- DEMO SECTION -->
+ <!-- DEMO SECTION -->
         <div id="view-demos" class="view-section">
             <section class="py-20 px-6">
                 <div class="container mx-auto">
                     <div class="text-center mb-20">
-                        <h2 class="text-6xl md:text-8xl font-black italic uppercase text-white glow-text">THE RECEIPTS</h2>
-                        <p class="text-slate-500 font-mono text-xs tracking-[0.5em] mt-6 uppercase">Raw Console Recordings // Zero Edits // Full Proof</p>
+                        <h2 class="text-6xl md:text-8xl font-black italic uppercase text-gray-900 glow-text">THE RECEIPTS</h2>
+                        <p class="text-slate-600 font-mono text-xs tracking-[0.5em] mt-6 uppercase">Raw Console Recordings // Zero Edits // Full Proof</p>
                     </div>
 
-                    <div class="max-w-5xl mx-auto space-y-32">
+                    <div class="max-w-5xl mx-auto">
                         <!-- ShadowSIM Proof -->
-                        <div class="bg-dark-900 border border-white/10 p-6 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                        <div class="bg-light-900 border border-black/10 p-6 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.1)]">
                             <div class="flex items-center justify-between mb-8 px-2">
                                 <div class="flex items-center gap-3">
                                     <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
-                                    <span class="text-xs font-mono font-bold uppercase tracking-widest text-white">LIVE: SS7 INTERCEPTION FEED</span>
+                                    <span class="text-xs font-mono font-bold uppercase tracking-widest text-gray-900">LIVE: SS7 INTERCEPTION FEED</span>
                                 </div>
-                                <span class="text-[10px] text-slate-600 font-mono">JAN 2026 // V4.2 STABLE</span>
+                                <span class="text-[10px] text-slate-500 font-mono">JAN 2026 // V4.2 STABLE</span>
                             </div>
                             
                             <div class="grid md:grid-cols-2 gap-8 items-start">
@@ -307,138 +28,26 @@
                                 </div>
                                 
                                 <div class="space-y-6">
-                                    <div class="p-4 bg-dark-800 rounded-xl border border-white/5">
+                                    <div class="p-4 bg-light-800 rounded-xl border border-black/5">
                                         <h4 class="text-neon-cyan font-bold uppercase text-xs mb-3">Verification Details</h4>
-                                        <p class="text-sm text-slate-400">This demo shows the direct redirection of a banking OTP from a target MSISDN straight to our secure logging terminal.</p>
+                                        <p class="text-sm text-slate-600">This demo shows the direct redirection of a banking OTP from a target MSISDN straight to our secure logging terminal.</p>
                                     </div>
-                                    <img src="https://i.postimg.cc/NGzcChKN/location2.png" class="rounded-xl border border-white/10 grayscale hover:grayscale-0 transition-all duration-500" alt="Tower Mapping">
-                                    <img src="https://i.postimg.cc/xdnDNnZv/shadowlogs.png" class="rounded-xl border border-white/10" alt="Capture Logs">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tiss Proof -->
-                        <div class="bg-dark-900 border border-white/10 p-6 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-                            <div class="flex items-center justify-between mb-8 px-2">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-3 h-3 rounded-full bg-neon-purple animate-pulse"></div>
-                                    <span class="text-xs font-mono font-bold uppercase tracking-widest text-white">LIVE: TISS GATEWAY BYPASS</span>
-                                </div>
-                            </div>
-                            
-                            <div class="grid md:grid-cols-2 gap-8 items-start">
-                                <!-- Tiss Short Video -->
-                                <div class="video-wrapper">
-                                    <iframe 
-                                        src="https://www.youtube.com/embed/l6fgM1f-Zig" 
-                                        frameborder="0" allowfullscreen>
-                                    </iframe>
-                                </div>
-                                
-                                <div class="space-y-6">
-                                    <div class="p-4 bg-dark-800 rounded-xl border border-white/5">
-                                        <h4 class="text-neon-purple font-bold uppercase text-xs mb-3">Bypass Architecture</h4>
-                                        <p class="text-sm text-slate-400">Automated skip of 3D-Secure authentication gates. Real-time routing through non-flagged merchant tunnels.</p>
-                                    </div>
-                                    <img src="https://i.postimg.cc/7ZPjqmJb/Screenshot-From-2026-01-13-23-48-03.png" class="rounded-xl border border-white/10" alt="Gateway Interface">
-                                    <img src="https://i.postimg.cc/k4RkkGRJ/Screenshot-From-2026-01-13-23-47-04.png" class="rounded-xl border border-white/10" alt="Transaction Success">
+                                    <!-- local images updated as requested -->
+                                    <img src="image1.png" class="rounded-xl border border-black/10 grayscale hover:grayscale-0 transition-all duration-500" alt="Tower Mapping">
+                                    <img src="image2.png" class="rounded-xl border border-black/10" alt="Capture Logs">
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="mt-32 text-center p-12 md:p-24 bg-dark-900 border border-white/5 rounded-[3rem] relative overflow-hidden">
+                    <div class="mt-32 text-center p-12 md:p-24 bg-light-900 border border-black/5 rounded-[3rem] relative overflow-hidden">
                         <div class="scanline"></div>
-                        <h3 class="text-4xl md:text-7xl font-black italic uppercase text-white mb-10 leading-none">Ready to start intercepting?</h3>
-                        <p class="text-slate-400 max-w-xl mx-auto mb-14 text-lg">Our dev team is available 24/7 for license activation and setup. Don't waste time on tools that get your targets' SIMs flagged.</p>
-                        <a href="https://t.me/shadowsimstore" target="_blank" class="inline-flex items-center gap-5 px-16 py-7 neon-btn text-black font-black uppercase italic tracking-widest rounded-full transition-all">
+                        <h3 class="text-4xl md:text-7xl font-black italic uppercase text-gray-900 mb-10 leading-none">Ready to start intercepting?</h3>
+                        <p class="text-slate-600 max-w-xl mx-auto mb-14 text-lg">Our dev team is available 24/7 for license activation and setup. Don't waste time on tools that get your targets' SIMs flagged.</p>
+                        <a href="https://t.me/shadowsimstore" target="_blank" class="inline-flex items-center gap-5 px-16 py-7 neon-btn text-white font-black uppercase italic tracking-widest rounded-full transition-all">
                             <i class="fab fa-telegram text-3xl"></i>
                             Contact Dev on Telegram
                         </a>
                     </div>
                 </div>
             </section>
-        </div>
-    </main>
-
-    <footer class="py-24 border-t border-white/5 bg-black text-center relative z-10">
-        <div class="container mx-auto px-6">
-            <div class="text-4xl font-black italic uppercase mb-8 text-white tracking-tighter">ShadowSIM</div>
-            <p class="text-slate-600 text-[10px] font-mono uppercase tracking-[0.6em] mb-12">Carrier-Level Domination // Code is Law</p>
-            <div class="flex justify-center gap-12 mb-20">
-                <a href="https://t.me/shadowsimstore" target="_blank" class="text-slate-500 hover:text-neon-cyan transition-colors transform hover:scale-125 duration-300"><i class="fab fa-telegram text-5xl"></i></a>
-            </div>
-            <div class="text-[9px] font-bold text-slate-800 uppercase tracking-widest max-w-2xl mx-auto leading-relaxed italic border-t border-white/5 pt-12">
-                No refunds. No support for snitches. This software is sold for educational research on network security. Use at your own risk. © 2026 ShadowSIM Research & Exploitation.
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        /**
-         * Robust Single Page Application (SPA) Logic
-         */
-        function switchTab(tabId) {
-            // 1. Logic for section swapping
-            const targetSectionId = tabId === 'home' ? 'view-home' : 'view-demos';
-            
-            document.querySelectorAll('.view-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            const targetSection = document.getElementById(targetSectionId);
-            if (targetSection) {
-                targetSection.classList.add('active');
-            }
-            
-            // 2. Navigation Link Highlighting
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            
-            const activeNavBtn = document.getElementById('nav-' + tabId);
-            if (activeNavBtn) {
-                activeNavBtn.classList.add('active');
-            }
-            
-            // 3. Page Reset
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        /**
-         * Mobile Navigation Controller
-         */
-        const menuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const menuIcon = document.getElementById('menu-icon');
-
-        function toggleMenu() {
-            const isMenuHidden = mobileMenu.classList.contains('hidden');
-            if (isMenuHidden) {
-                mobileMenu.classList.remove('hidden');
-                menuIcon.classList.replace('fa-bars-staggered', 'fa-times');
-            } else {
-                mobileMenu.classList.add('hidden');
-                menuIcon.classList.replace('fa-times', 'fa-bars-staggered');
-            }
-        }
-
-        if (menuBtn) {
-            menuBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleMenu();
-            });
-        }
-
-        // Auto-close menu on outside interaction
-        document.addEventListener('click', (e) => {
-            if (!mobileMenu.classList.contains('hidden') && !mobileMenu.contains(e.target) && e.target !== menuBtn) {
-                toggleMenu();
-            }
-        });
-
-        console.log('%c SHADOWSIM CORE OPERATIONAL ', 'background: #00f2ff; color: #000; font-weight: bold; padding: 10px; border-radius: 5px;');
-    </script>
-</body>
-</html>
-
